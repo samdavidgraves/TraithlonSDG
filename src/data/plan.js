@@ -39,21 +39,17 @@ export const RUN_PROGRESSION = [
   { week: 5, label: '1 min run / 2 min walk × 8', minutes: 24 },
   { week: 6, label: '1 min run / 2 min walk × 10', minutes: 30 },
   { week: 7, label: '2 min run / 2 min walk × 8', minutes: 32 },
-  { week: 8, label: '2 min run / 2 min walk × 9', minutes: 36 },
-  { week: 9, label: '3 min run / 2 min walk × 7', minutes: 35 },
-  { week: 10, label: '3 min run / 1 min walk × 8', minutes: 32 },
-  { week: 11, label: '4 min run / 1 min walk × 7', minutes: 35 },
-  { week: 12, label: '5 min run / 1 min walk × 6', minutes: 36 },
-  { week: 13, label: '6 min run / 1 min walk × 5', minutes: 35 },
-  { week: 14, label: '8 min run / 1 min walk × 4', minutes: 36 },
-  { week: 15, label: '10 min run / 1 min walk × 3', minutes: 33 },
-  { week: 16, label: '12 min run / 1 min walk × 3', minutes: 39 },
-  { week: 17, label: '15 min run / 1 min walk × 2', minutes: 32 },
-  { week: 18, label: '20 min run / 1 min walk × 2', minutes: 42 },
-  { week: 19, label: '25 min continuous, easy', minutes: 25 },
-  { week: 20, label: '30 min continuous, easy', minutes: 30 },
-  { week: 21, label: '30 min continuous + 4 × 20 sec strides', minutes: 34 },
-  { week: 22, label: '35 min continuous, easy', minutes: 35 },
+  { week: 8, label: '3 min run / 2 min walk × 7', minutes: 35 },
+  { week: 9, label: '3 min run / 1 min walk × 8', minutes: 32 },
+  { week: 10, label: '4 min run / 1 min walk × 7', minutes: 35 },
+  { week: 11, label: '5 min run / 1 min walk × 6', minutes: 36 },
+  { week: 12, label: '6 min run / 1 min walk × 5', minutes: 35 },
+  { week: 13, label: '8 min run / 1 min walk × 4', minutes: 36 },
+  { week: 14, label: '10 min run / 1 min walk × 3', minutes: 33 },
+  { week: 15, label: '12 min run / 1 min walk × 3', minutes: 39 },
+  { week: 16, label: '15 min run / 1 min walk × 2', minutes: 32 },
+  { week: 17, label: '20 min run / 1 min walk × 2', minutes: 42 },
+  { week: 18, label: '25 min continuous, easy', minutes: 25 },
 ]
 
 export const RUN_START_WEEK = RUN_PROGRESSION[0].week
@@ -69,15 +65,15 @@ export function runStepFor(phaseWeek, hold = 0) {
 // Phase 4 — run rebuild + taper
 // ---------------------------------------------------------------------------
 
-const P4_LONG_RUN = [30, 35, 40, 45, 50, 55, 60, 60, 40, 25]
-const P4_MID_RUN = [20, 25, 25, 30, 30, 35, 35, 35, 25, 20]
-const P4_TAPER = { 9: 0.7, 10: 0.5 } // phase week → volume multiplier
+const P4_LONG_RUN = [30, 35, 42, 48, 55, 60, 40, 25]
+const P4_MID_RUN = [20, 25, 28, 32, 35, 35, 25, 20]
+const P4_TAPER = { 7: 0.7, 8: 0.5 } // phase week → volume multiplier
 
 const taperScale = (phaseWeek, minutes) =>
   Math.round((minutes * (P4_TAPER[phaseWeek] ?? 1)) / 5) * 5
 
-/** Bricks land every 10 days through the build, none inside the last 13 days. */
-export const BRICK_OFFSETS = [6, 16, 26, 36, 46, 56]
+/** Bricks land every 10 days through the build, none inside the taper. */
+export const BRICK_OFFSETS = [6, 16, 26, 36]
 
 // ---------------------------------------------------------------------------
 // Phase 3 — micro-session menu (no weekly template)

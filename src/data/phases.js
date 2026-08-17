@@ -1,14 +1,15 @@
 import { parseYmd, daysBetween, addDays } from '../lib/date'
 
 // ---------------------------------------------------------------------------
-// The macrocycle: Mon 3 Aug 2026 → race day Sun 20 June 2027 (46 weeks).
-// Phases are contiguous so there is never a gap in the calendar. Phase 1 is
-// carried through the holidays (22 weeks) rather than leaving Dec unplanned —
-// the run progression itself still runs over ~18 weeks of build.
+// The macrocycle: Mon 3 Aug 2026 → race day Sun 6 June 2027 (44 weeks).
+//
+// Counted backwards from race day, with two fixed anchors: the first weekend
+// of June, and the due date at the end of February. Phases are contiguous so
+// no week of the calendar is left unplanned.
 // ---------------------------------------------------------------------------
 
 export const PLAN_START = '2026-08-03' // Monday
-export const RACE_DAY = '2027-06-20' // Sunday
+export const RACE_DAY = '2027-06-06' // Sunday of the first weekend in June
 export const BABY_DUE = '2027-02-28'
 
 export const PHASES = [
@@ -18,8 +19,8 @@ export const PHASES = [
     name: 'Foundation & Base',
     short: 'Foundation',
     start: '2026-08-03',
-    end: '2027-01-03',
-    weeks: 22,
+    end: '2026-12-06',
+    weeks: 18,
     color: '#a8ff00',
     tagline: 'Build the knees, then build the engine.',
     focus:
@@ -30,13 +31,13 @@ export const PHASES = [
     key: 'taper-fatherhood',
     name: 'Taper into Fatherhood',
     short: 'Taper',
-    start: '2027-01-04',
+    start: '2026-12-07',
     end: '2027-02-14',
-    weeks: 6,
+    weeks: 10,
     color: '#4fc3f7',
     tagline: 'Consistency over fitness — this phase is about staying injury-free and ready, not building.',
     focus:
-      'Volume comes down on purpose. Two KAZ sessions, one easy swim, one easy bike. Running is optional and short. Bank sleep, not mileage.',
+      'Volume comes down on purpose, through the holidays and the third trimester. Two KAZ sessions, one easy swim, one easy bike. Running is optional and short. Bank sleep, not mileage.',
   },
   {
     id: 3,
@@ -58,10 +59,10 @@ export const PHASES = [
     name: 'Race Build',
     short: 'Build',
     start: '2027-04-12',
-    end: '2027-06-20',
-    weeks: 10,
+    end: '2027-06-06',
+    weeks: 8,
     color: '#ff9f45',
-    tagline: 'Ten weeks. Rebuild, then sharpen.',
+    tagline: 'Eight weeks. Rebuild, then sharpen.',
     focus:
       'Swim and bike twice a week, run volume rebuilt continuously, a brick every 10 days, and KAZ twice a week — maintenance that never gets dropped. Final two weeks taper.',
   },

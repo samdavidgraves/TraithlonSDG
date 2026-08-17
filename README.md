@@ -1,8 +1,8 @@
 # KneesUp Tri
 
 Road to my 1/4 triathlon — a mobile-first training tracker that runs the
-**Knee Ability Zero (KAZ)** rehab program alongside a 46-week triathlon build
-from **Mon 3 Aug 2026** to **race day, Sun 20 June 2027**, with the arrival of a
+**Knee Ability Zero (KAZ)** rehab program alongside a 44-week triathlon build
+from **Mon 3 Aug 2026** to **race day, Sun 6 June 2027**, with the arrival of a
 first child (due end of Feb 2027) planned in as a real training phase.
 
 Dark athletic UI, lime accent, big timers, progress rings. React + Tailwind,
@@ -52,7 +52,7 @@ HTTPS or localhost, so this route gives you the app but not offline mode.
 week/month counters, and the run-progression gate when it applies. In Phase 3 it
 swaps the plan for a menu of micro-sessions.
 
-**Calendar** — all 46 weeks grouped by phase, each week showing its seven days
+**Calendar** — all 44 weeks grouped by phase, each week showing its seven days
 with a dot per session and completion state. Tap a week to open it, tick sessions
 off, or edit it: add your own session, remove one, or reset a day back to the
 template.
@@ -83,18 +83,19 @@ gate below.
 
 | Phase | Dates | Weeks | Shape |
 | --- | --- | --- | --- |
-| 1 — Foundation & Base | 3 Aug 2026 – 3 Jan 2027 | 22 | KAZ Mon/Wed/Fri, swim ×2, bike ×2, walk-run from week 5 |
-| 2 — Taper into Fatherhood | 4 Jan – 14 Feb 2027 | 6 | KAZ ×2, swim ×1, bike ×1, running optional |
+| 1 — Foundation & Base | 3 Aug – 6 Dec 2026 | 18 | KAZ Mon/Wed/Fri, swim ×2, bike ×2, walk-run from week 5 |
+| 2 — Taper into Fatherhood | 7 Dec 2026 – 14 Feb 2027 | 10 | KAZ ×2, swim ×1, bike ×1, running optional |
 | 3 — Newborn Survival Mode | 15 Feb – 11 Apr 2027 | 8 | No template — 15–20 min micro-sessions logged ad hoc |
-| 4 — Race Build | 12 Apr – 20 Jun 2027 | 10 | KAZ ×2, swim ×2, bike ×2, runs rebuilt, brick every 10 days, 2-week taper |
+| 4 — Race Build | 12 Apr – 6 Jun 2027 | 8 | KAZ ×2, swim ×2, bike ×2, runs rebuilt, brick every 10 days, 2-week taper |
 
-Phase 1 is carried through the holidays (22 weeks rather than 18) so no week of
-the calendar is left unplanned; the *run* progression itself still spans the
-18 build weeks described below.
+The calendar is counted backwards from race day against two fixed anchors: the
+first weekend of June, and the due date at the end of February. Phase 1 is the
+18 build weeks; December falls into Phase 2, whose whole purpose — stay ready,
+don't build — already suits the holidays and the third trimester.
 
 **Walk-run progression (Phase 1).** Running is introduced in week 5 at 1 min run
 / 2 min walk × 8 and advances one step a week — through 2/2, 3/1, 5/1, 10/1 and
-20/1 — to continuous easy running by the end of the phase.
+20/1 — reaching 25 minutes continuous by week 18.
 
 **The gate.** Progression only advances while KAZ is going in clean. The app
 looks back 14 days at your check-ins:
@@ -113,9 +114,10 @@ short spin, core + L-sit, pool window — that you log whenever a window opens, 
 counts *sessions logged* rather than plan adherence. The streak is phase-aware:
 quiet days in Survival Mode never break it.
 
-**Phase 4** rebuilds continuous running week by week, drops a bike→run brick
-every 10 days, keeps KAZ twice a week as non-negotiable maintenance, and
-auto-reduces displayed volume across the final two taper weeks into race day.
+**Phase 4** rebuilds continuous running week by week (30 → 60 min), drops a
+bike→run brick every 10 days, keeps KAZ twice a week as non-negotiable
+maintenance, and auto-reduces displayed volume across the final two taper weeks
+into race day.
 
 ## Settings
 
