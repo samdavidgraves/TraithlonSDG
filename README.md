@@ -12,7 +12,39 @@ everything stored in `localStorage` — single user, no backend, no account.
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # production bundle in dist/
+npm run preview  # serve the built app (needed to exercise the service worker)
 ```
+
+## Getting it on your phone
+
+The app is an installable PWA — it precaches its whole shell, so once installed it
+opens and logs sessions with no signal (pool changing rooms, turbo sheds, 4am
+feeds). Fonts are bundled, so nothing is fetched from the network at runtime.
+
+**Publish it.** Pushing to `main` builds and deploys to GitHub Pages via
+`.github/workflows/deploy.yml`. One-time setup: repo **Settings → Pages →
+Source: GitHub Actions**. The app then lives at
+`https://<user>.github.io/TraithlonSDG/`. Any static host works just as well —
+the workflow only sets `VITE_BASE` because project Pages sites are served from a
+subpath; on Netlify or Vercel leave it unset and the default `/` applies.
+
+**Install it.**
+
+- *iPhone* — open the URL in **Safari** (not Chrome), Share → **Add to Home
+  Screen**. It launches full-screen with no browser chrome.
+- *Android* — open in Chrome, menu → **Install app** / **Add to home screen**.
+
+**Back up occasionally.** Sessions are stored in that browser's localStorage and
+nowhere else, so clearing site data or switching phones loses them. Settings (⚙)
+has *Save backup* / *Copy backup* and *Restore from file* — a JSON round-trip
+that also moves your history to a new device. Installing to the home screen makes
+eviction much less likely on iOS, but a backup before a phone upgrade is still
+worth the ten seconds.
+
+**Just to try it on your phone today**, without publishing: run
+`npm run dev -- --host` and open the printed `192.168.x.x:5173` address on a
+phone on the same Wi-Fi. Note that the service worker and install prompt need
+HTTPS or localhost, so this route gives you the app but not offline mode.
 
 ## The three tabs
 
@@ -88,8 +120,8 @@ auto-reduces displayed volume across the final two taper weeks into race day.
 ## Settings
 
 The ⚙ button jumps the app's idea of "today" into any phase, so you can see how
-the plan behaves months ahead without waiting. Your logs are untouched by it. The
-same sheet resets all stored data.
+the plan behaves months ahead without waiting — your logs are untouched by it.
+The same sheet holds the backup/restore round-trip and a full data reset.
 
 ## Layout
 

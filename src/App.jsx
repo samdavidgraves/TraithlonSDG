@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { StoreProvider } from './store/store'
 import { useStore } from './store/context'
 import TodayView from './views/TodayView'
@@ -42,10 +42,37 @@ function TabBar({ tab, setTab }) {
   )
 }
 
-/** Jump the app's idea of "today" to preview any phase, plus a hard reset. */
+/** Jump the app's idea of "today" to preview any phase, back up, or reset. */
 function SettingsSheet({ open, onClose }) {
-  const { settings, setDebugDate, resetAll, logs } = useStore()
+  const { settings, setDebugDate, resetAll, logs, exportData, importData } = useStore()
   const [confirm, setConfirm] = useState(false)
+  const [status, setStatus] = useState(null)
+  const fileRef = useRef(null)
+
+  const download = () => {
+    const blob = new Blob([exportData()], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `kneesup-tri-${ymd(new Date())}.json`
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    setStatus({ ok: true, message: 'Backup file saved.' })
+  }
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(exportData())
+      setStatus({ ok: true, message: 'Backup copied to the clipboard.' })
+    } catch {
+      setStatus({ ok: false, message: 'Clipboard blocked — use the file download instead.' })
+    }
+  }
+
+  const restore = async (file) => {
+    if (!file) return
+    setStatus(importData(await file.text()))
+  }
 
   return (
     <Sheet open={open} onClose={onClose} title="Settings" subtitle="Preview the plan and manage your data">
@@ -81,8 +108,40 @@ function SettingsSheet({ open, onClose }) {
         </div>
 
         <div className="border-t border-ink-800 pt-4">
+          <div className="label mb-2">Backup</div>
+          <p className="mb-3 text-sm leading-relaxed text-white/45">
+            Sessions live in this browser only. Grab a backup now and then so eleven months of logs can’t
+            vanish with a cleared cache or a new phone.
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <button className="btn-ghost" onClick={download}>
+              Save backup
+            </button>
+            <button className="btn-ghost" onClick={copy}>
+              Copy backup
+            </button>
+          </div>
+          <button className="btn-ghost mt-2 w-full" onClick={() => fileRef.current?.click()}>
+            Restore from file
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(e) => {
+              restore(e.target.files?.[0])
+              e.target.value = ''
+            }}
+          />
+          {status && (
+            <p className={`mt-2 text-xs font-bold ${status.ok ? 'text-acid' : 'text-[#ff5c5c]'}`}>{status.message}</p>
+          )}
+        </div>
+
+        <div className="border-t border-ink-800 pt-4">
           <div className="label mb-2">Data</div>
-          <p className="mb-3 text-sm text-white/45">{logs.length} sessions stored locally on this device.</p>
+          <p className="mb-3 text-sm text-white/45">{logs.length} {logs.length === 1 ? 'session' : 'sessions'} stored locally on this device.</p>
           {confirm ? (
             <div className="flex gap-2">
               <button className="btn-ghost flex-1" onClick={() => setConfirm(false)}>

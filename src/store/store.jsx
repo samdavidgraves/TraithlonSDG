@@ -115,6 +115,32 @@ export function StoreProvider({ children }) {
     setState({ ...EMPTY, settings: { ...EMPTY.settings } })
   }, [])
 
+  /** Everything worth keeping, as JSON — phone browsers do evict localStorage. */
+  const exportData = useCallback(
+    () => JSON.stringify({ ...state, app: 'kneesup-tri', exportedAt: new Date().toISOString() }, null, 2),
+    [state],
+  )
+
+  /** Restore a backup. Returns { ok, message } rather than throwing at the UI. */
+  const importData = useCallback((json) => {
+    let parsed
+    try {
+      parsed = JSON.parse(json)
+    } catch {
+      return { ok: false, message: 'That file isn’t valid JSON.' }
+    }
+    if (!parsed || !Array.isArray(parsed.logs)) {
+      return { ok: false, message: 'No session log found in that file.' }
+    }
+    setState({
+      version: 1,
+      logs: parsed.logs,
+      overrides: parsed.overrides && typeof parsed.overrides === 'object' ? parsed.overrides : {},
+      settings: { ...EMPTY.settings, ...(parsed.settings || {}) },
+    })
+    return { ok: true, message: `Restored ${parsed.logs.length} sessions.` }
+  }, [])
+
   const value = useMemo(
     () => ({
       ...state,
@@ -127,8 +153,22 @@ export function StoreProvider({ children }) {
       setDayOverride,
       setDebugDate,
       resetAll,
+      exportData,
+      importData,
     }),
-    [state, today, addLog, removeLog, updateLog, toggleSession, setDayOverride, setDebugDate, resetAll],
+    [
+      state,
+      today,
+      addLog,
+      removeLog,
+      updateLog,
+      toggleSession,
+      setDayOverride,
+      setDebugDate,
+      resetAll,
+      exportData,
+      importData,
+    ],
   )
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

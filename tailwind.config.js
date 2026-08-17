@@ -20,7 +20,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"DM Sans"', 'Outfit', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"DM Sans Variable"', '"DM Sans"', 'system-ui', '-apple-system', 'sans-serif'],
       },
       boxShadow: {
         glow: '0 0 24px rgba(168,255,0,0.18)',
