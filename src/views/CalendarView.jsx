@@ -102,7 +102,7 @@ export default function CalendarView() {
       <div className="sticky top-0 z-20 border-b border-ink-800 bg-ink-950/95 px-4 pb-3 pt-3 backdrop-blur">
         <h1 className="text-2xl font-black leading-none tracking-tight">Macrocycle</h1>
         <p className="mt-1 text-xs text-white/40">
-          Aug 2026 → June 2027 · {TOTAL_WEEKS} weeks · race Sun 20 June
+          Aug 2026 → June 2027 · {TOTAL_WEEKS} weeks · race Sun 6 June
         </p>
         <div className="no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4">
           <button
