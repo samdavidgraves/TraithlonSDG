@@ -1,4 +1,4 @@
-import { parseYmd, ymd, daysBetween, mondayIndex, addDays } from '../lib/date'
+import { ymd, parseYmd, mondayIndex, addDays } from '../lib/date'
 import { PHASES, phaseForDate, phaseWeekNumber, RACE_DAY } from './phases'
 
 // ---------------------------------------------------------------------------
@@ -30,25 +30,51 @@ const s = (type, title, detail, minutes, extra = {}) => ({
 })
 
 // ---------------------------------------------------------------------------
-// Phase 1 — walk-run progression. Running is introduced in phase week 5 and
-// advances one step per week, but only while the KAZ pain check-ins stay
-// clean (see `runGateFor` in lib/gate.js — a failing gate holds the step).
+// The available week: two weeknights and one weekend day. Everything —
+// including KAZ — has to fit inside these three slots, so the templates are
+// built per slot rather than per day. Change the days or lengths here and the
+// whole plan follows.
+// ---------------------------------------------------------------------------
+
+export const SLOTS = {
+  night1: 1, // Tuesday   (Monday = 0)
+  night2: 3, // Thursday
+  weekend: 6, // Sunday
+  nightMinutes: 45,
+  weekendMinutes: 90,
+}
+
+/** 'n1' | 'n2' | 'w' for a training slot, null for a rest day. */
+function slotRole(dayIdx) {
+  if (dayIdx === SLOTS.night1) return 'n1'
+  if (dayIdx === SLOTS.night2) return 'n2'
+  if (dayIdx === SLOTS.weekend) return 'w'
+  return null
+}
+
+export const SLOT_DAY_LABELS = ['Tue', 'Thu', 'Sun']
+
+// ---------------------------------------------------------------------------
+// Phase 1 — walk-run progression, introduced in phase week 5 on the weekend
+// slot and advanced one step a week, but only while the KAZ pain check-ins
+// stay clean (see `runGate` in lib/derive.js — a failing gate holds the step).
+// Sized to share the 90-minute weekend slot with the bike.
 // ---------------------------------------------------------------------------
 
 export const RUN_PROGRESSION = [
-  { week: 5, label: '1 min run / 2 min walk × 8', minutes: 24 },
-  { week: 6, label: '1 min run / 2 min walk × 10', minutes: 30 },
-  { week: 7, label: '2 min run / 2 min walk × 8', minutes: 32 },
-  { week: 8, label: '3 min run / 2 min walk × 7', minutes: 35 },
-  { week: 9, label: '3 min run / 1 min walk × 8', minutes: 32 },
-  { week: 10, label: '4 min run / 1 min walk × 7', minutes: 35 },
-  { week: 11, label: '5 min run / 1 min walk × 6', minutes: 36 },
-  { week: 12, label: '6 min run / 1 min walk × 5', minutes: 35 },
-  { week: 13, label: '8 min run / 1 min walk × 4', minutes: 36 },
-  { week: 14, label: '10 min run / 1 min walk × 3', minutes: 33 },
-  { week: 15, label: '12 min run / 1 min walk × 3', minutes: 39 },
-  { week: 16, label: '15 min run / 1 min walk × 2', minutes: 32 },
-  { week: 17, label: '20 min run / 1 min walk × 2', minutes: 42 },
+  { week: 5, label: '1 min run / 2 min walk × 7', minutes: 21 },
+  { week: 6, label: '1 min run / 2 min walk × 8', minutes: 24 },
+  { week: 7, label: '2 min run / 2 min walk × 6', minutes: 24 },
+  { week: 8, label: '2 min run / 2 min walk × 7', minutes: 28 },
+  { week: 9, label: '3 min run / 2 min walk × 6', minutes: 30 },
+  { week: 10, label: '3 min run / 1 min walk × 7', minutes: 28 },
+  { week: 11, label: '4 min run / 1 min walk × 6', minutes: 30 },
+  { week: 12, label: '5 min run / 1 min walk × 5', minutes: 30 },
+  { week: 13, label: '6 min run / 1 min walk × 4', minutes: 28 },
+  { week: 14, label: '8 min run / 1 min walk × 3', minutes: 27 },
+  { week: 15, label: '10 min run / 1 min walk × 3', minutes: 33 },
+  { week: 16, label: '12 min run / 1 min walk × 2', minutes: 26 },
+  { week: 17, label: '15 min run / 1 min walk × 2', minutes: 32 },
   { week: 18, label: '25 min continuous, easy', minutes: 25 },
 ]
 
@@ -62,21 +88,28 @@ export function runStepFor(phaseWeek, hold = 0) {
 }
 
 // ---------------------------------------------------------------------------
-// Phase 4 — run rebuild + taper
+// Phase 4 — race build. The weeknight run rebuilds week by week; the weekend
+// slot alternates a long ride with a bike→run brick.
 // ---------------------------------------------------------------------------
 
-const P4_LONG_RUN = [30, 35, 42, 48, 55, 60, 40, 25]
-const P4_MID_RUN = [20, 25, 28, 32, 35, 35, 25, 20]
+const P4_NIGHT_RUN = [22, 25, 28, 30, 30, 30, 20, 12]
 const P4_TAPER = { 7: 0.7, 8: 0.5 } // phase week → volume multiplier
 
-const taperScale = (phaseWeek, minutes) =>
-  Math.round((minutes * (P4_TAPER[phaseWeek] ?? 1)) / 5) * 5
+/**
+ * Weekend slot rotation. With one long session a week, a brick every 10 days
+ * isn't available — this alternates instead, which lands 4 bricks in 8 weeks.
+ */
+export const BRICK_WEEKS = [2, 4, 6, 7]
 
-/** Bricks land every 10 days through the build, none inside the taper. */
-export const BRICK_OFFSETS = [6, 16, 26, 36]
+/**
+ * Taper scaling, floored at 15 min — a taper shortens sessions, it doesn't
+ * turn them into 5-minute tokens that aren't worth changing kit for.
+ */
+const scale = (phaseWeek, minutes) =>
+  Math.max(15, Math.round((minutes * (P4_TAPER[phaseWeek] ?? 1)) / 5) * 5)
 
 // ---------------------------------------------------------------------------
-// Phase 3 — micro-session menu (no weekly template)
+// Phase 3 — micro-session menu (no weekly template, no fixed slots)
 // ---------------------------------------------------------------------------
 
 export const MICRO_SESSIONS = [
@@ -137,64 +170,74 @@ export const MICRO_SESSIONS = [
 export const MICRO_BY_ID = Object.fromEntries(MICRO_SESSIONS.map((m) => [m.id, m]))
 
 // ---------------------------------------------------------------------------
-// Weekly templates
+// Weekly templates, one per slot
 // ---------------------------------------------------------------------------
 
-function phase1Day(dayIdx, phaseWeek) {
+function phase1Slot(role, phaseWeek) {
   const step = runStepFor(phaseWeek)
-  switch (dayIdx) {
-    case 0:
-      return [s('kaz', 'KAZ — full routine', 'All 10 steps, unhurried.', 45, { kaz: true })]
-    case 1:
-      return [s('swim', 'Swim — technique', 'Drills: catch-up, single-arm, 6-kick switch. Short reps, long rests.', 45)]
-    case 2:
-      return [
-        s('kaz', 'KAZ — full routine', 'All 10 steps.', 45, { kaz: true }),
-        s('bike', 'Bike — easy aerobic', 'Zone 2, spin high cadence. Nothing hard.', 45),
-      ]
-    case 3:
-      return [s('swim', 'Swim — technique', 'Drills + 8–10 × 50 m easy on form.', 45)]
-    case 4:
-      return [s('kaz', 'KAZ — full routine', 'All 10 steps.', 45, { kaz: true })]
-    case 5:
-      return [s('bike', 'Bike — long easy', 'Aerobic ride, flat to rolling, fuel every 45 min.', phaseWeek < 8 ? 75 : 90)]
-    case 6:
-      return step
-        ? [s('run', 'Run — walk/run intervals', step.label, step.minutes, { runStep: phaseWeek, gated: true })]
-        : [
-            s('walk', 'Walk — brisk', 'Running starts in week 5. Brisk walk, easy on the knees.', 40, {
-              optional: true,
-            }),
-          ]
-    default:
-      return []
+  if (role === 'n1') {
+    return [
+      s('kaz', 'KAZ — full routine', 'All 10 steps at home. No travel, no kit — this is the knee investment.', 45, {
+        kaz: true,
+      }),
+    ]
   }
+  if (role === 'n2') {
+    return [
+      s('kaz', 'KAZ Express', 'Steps 1–4 before you leave: tib raise → FHL → tib raise → KOT calf.', 10, {
+        kaz: true,
+        kazSubset: 'express',
+      }),
+      s('swim', 'Swim — technique', 'Drills: catch-up, single-arm, 6-kick switch. Short reps, long rests.', 35),
+    ]
+  }
+  // Weekend: mobility, then run on fresh legs, then whatever bike time is left.
+  const mobility = 15
+  const runMinutes = step ? step.minutes : 0
+  const bike = Math.max(30, SLOTS.weekendMinutes - mobility - runMinutes)
+  const out = [
+    s('mobility', 'KAZ Mobility', 'Elephant walk, couch stretch, figure-4. Warm-up, not an afterthought.', mobility, {
+      kaz: true,
+      kazSubset: 'mobility',
+    }),
+  ]
+  if (step) {
+    out.push(
+      s('run', 'Run — walk/run intervals', step.label, runMinutes, { runStep: phaseWeek, gated: true }),
+    )
+  }
+  out.push(
+    s(
+      'bike',
+      'Bike — easy aerobic',
+      step
+        ? 'Straight after the run. Zone 2, spin high cadence — this doubles as brick practice.'
+        : 'Zone 2, spin high cadence. Running starts in week 5.',
+      bike,
+    ),
+  )
+  return out
 }
 
-function phase2Day(dayIdx) {
-  switch (dayIdx) {
-    case 0:
-      return [s('kaz', 'KAZ — full routine', 'All 10 steps. This is the one that never gets dropped.', 40, { kaz: true })]
-    case 2:
-      return [s('swim', 'Swim — easy', 'Continuous easy laps. No sets, no watch.', 35)]
-    case 3:
-      return [s('kaz', 'KAZ — full routine', 'All 10 steps.', 40, { kaz: true })]
-    case 5:
-      return [s('bike', 'Bike — easy', 'Steady aerobic spin, flat route.', 60)]
-    case 6:
-      return [
-        s('run', 'Run — optional, short & easy', '15–20 min very easy, or swap for a walk. Skip it freely.', 20, {
-          optional: true,
-        }),
-      ]
-    default:
-      return []
+function phase2Slot(role) {
+  if (role === 'n1') {
+    return [
+      s('kaz', 'KAZ — full routine', 'All 10 steps. This is the one that never gets dropped.', 45, { kaz: true }),
+    ]
   }
+  if (role === 'n2') {
+    return [s('swim', 'Swim — easy', 'Continuous easy laps. No sets, no watch.', 35)]
+  }
+  return [
+    s('mobility', 'KAZ Mobility', 'Elephant walk, couch stretch, figure-4.', 15, { kaz: true, kazSubset: 'mobility' }),
+    s('bike', 'Bike — easy', 'Steady aerobic spin, flat route. Nothing hard.', 60),
+    s('run', 'Run — optional, short & easy', '15 min very easy, or swap for a walk. Skip it freely.', 15, {
+      optional: true,
+    }),
+  ]
 }
 
-function phase4Day(dayIdx, phaseWeek, isRaceDay) {
-  const longRun = P4_LONG_RUN[phaseWeek - 1] ?? 40
-  const midRun = P4_MID_RUN[phaseWeek - 1] ?? 25
+function phase4Slot(role, phaseWeek, isRaceDay) {
   if (isRaceDay) {
     return [
       s('race', 'RACE DAY — Quarter Triathlon', 'Swim, bike, run. Ten months of work. Go and collect it.', 180, {
@@ -202,27 +245,41 @@ function phase4Day(dayIdx, phaseWeek, isRaceDay) {
       }),
     ]
   }
-  switch (dayIdx) {
-    case 0:
-      return [s('kaz', 'KAZ — maintenance', 'All 10 steps. Never dropped, even in taper.', 40, { kaz: true })]
-    case 1:
-      return [s('swim', 'Swim — intervals', '8–12 × 100 m at race effort, 20 sec rest.', taperScale(phaseWeek, 45))]
-    case 2:
-      return [s('bike', 'Bike — tempo', '3 × 10 min at steady-hard, 5 min easy between.', taperScale(phaseWeek, 60))]
-    case 3:
-      return [
-        s('kaz', 'KAZ — maintenance', 'All 10 steps.', 40, { kaz: true }),
-        s('run', 'Run — steady', `${taperScale(phaseWeek, midRun)} min continuous, controlled.`, taperScale(phaseWeek, midRun)),
-      ]
-    case 4:
-      return [s('swim', 'Swim — continuous', 'Straight swim at race pace, sighting practice.', taperScale(phaseWeek, 45))]
-    case 5:
-      return [s('bike', 'Bike — long aerobic', 'Race-course terrain if you can. Practise fuelling.', taperScale(phaseWeek, 90))]
-    case 6:
-      return [s('run', 'Run — long continuous', `${taperScale(phaseWeek, longRun)} min easy-steady.`, taperScale(phaseWeek, longRun))]
-    default:
-      return []
+  const nightRun = P4_NIGHT_RUN[phaseWeek - 1] ?? 25
+
+  if (role === 'n1') {
+    return [
+      s('kaz', 'KAZ — maintenance', 'All 10 steps, brisk. Never dropped, even in taper.', 15, { kaz: true }),
+      s('run', 'Run — steady', `${scale(phaseWeek, nightRun)} min continuous, controlled.`, scale(phaseWeek, nightRun)),
+    ]
   }
+  if (role === 'n2') {
+    return [
+      s('swim', 'Swim — race pace', '8–12 × 100 m at race effort, 20 sec rest. Practise sighting.', scale(phaseWeek, 45)),
+    ]
+  }
+
+  const mobility = 10
+  if (BRICK_WEEKS.includes(phaseWeek)) {
+    const bike = scale(phaseWeek, 55)
+    const run = scale(phaseWeek, 25)
+    return [
+      s('mobility', 'KAZ Mobility', 'Ten minutes on the mat before you ride.', mobility, {
+        kaz: true,
+        kazSubset: 'mobility',
+      }),
+      s('brick', 'Brick — bike → run', `${bike} min bike straight into ${run} min run. Under 2 min in transition.`, bike + run, {
+        brick: true,
+      }),
+    ]
+  }
+  return [
+    s('mobility', 'KAZ Mobility', 'Ten minutes on the mat before you ride.', mobility, {
+      kaz: true,
+      kazSubset: 'mobility',
+    }),
+    s('bike', 'Bike — long aerobic', 'Race-course terrain if you can. Practise fuelling and drinking on the move.', scale(phaseWeek, 80)),
+  ]
 }
 
 // ---------------------------------------------------------------------------
@@ -230,37 +287,22 @@ function phase4Day(dayIdx, phaseWeek, isRaceDay) {
 // ---------------------------------------------------------------------------
 
 /**
- * Default (un-edited) planned sessions for a date. Returns [] for rest days
- * and for Phase 3, which is deliberately template-free.
+ * Default (un-edited) planned sessions for a date. Returns [] for the four
+ * non-slot days and for Phase 3, which is deliberately template-free.
  */
 export function defaultSessionsFor(date) {
   const phase = phaseForDate(date)
   if (!phase) return []
-  const dayIdx = mondayIndex(date)
-  const pWeek = phaseWeekNumber(date, phase)
-
-  if (phase.id === 1) return phase1Day(dayIdx, pWeek)
-  if (phase.id === 2) return phase2Day(dayIdx)
   if (phase.id === 3) return []
 
-  // Phase 4 — apply the brick overlay on top of the weekly template.
-  const offset = daysBetween(parseYmd(phase.start), date)
+  const role = slotRole(mondayIndex(date))
   const isRaceDay = ymd(date) === RACE_DAY
-  let sessions = phase4Day(dayIdx, pWeek, isRaceDay)
-  if (!isRaceDay && BRICK_OFFSETS.includes(offset)) {
-    const kaz = sessions.filter((x) => x.type === 'kaz')
-    sessions = [
-      ...kaz,
-      s(
-        'brick',
-        'Brick — bike → run',
-        `${taperScale(pWeek, 50)} min bike straight into ${taperScale(pWeek, 20)} min run. Rack the bike and go — under 2 min transition.`,
-        taperScale(pWeek, 70),
-        { brick: true },
-      ),
-    ]
-  }
-  return sessions
+  if (!role && !isRaceDay) return []
+
+  const pWeek = phaseWeekNumber(date, phase)
+  if (phase.id === 1) return phase1Slot(role, pWeek)
+  if (phase.id === 2) return phase2Slot(role)
+  return phase4Slot(role, pWeek, isRaceDay)
 }
 
 /** Stable ids so completions survive re-renders: `2026-08-11#0`. */
@@ -272,7 +314,7 @@ export function weekDates(weekStart) {
   return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 }
 
-/** All 46 plan weeks, grouped for the calendar view. */
+/** All plan weeks, grouped for the calendar view. */
 export function allPlanWeeks() {
   const out = []
   for (const phase of PHASES) {

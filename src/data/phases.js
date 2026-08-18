@@ -24,7 +24,7 @@ export const PHASES = [
     color: '#a8ff00',
     tagline: 'Build the knees, then build the engine.',
     focus:
-      'KAZ three times a week, technique swimming, easy aerobic biking, and a walk-run progression that only advances while the knees stay quiet.',
+      'Three slots a week. Tue is the full KAZ routine at home, Thu is the pool, Sunday is mobility plus a ride — with a walk-run progression from week 5 that only advances while the knees stay quiet.',
   },
   {
     id: 2,
@@ -37,7 +37,7 @@ export const PHASES = [
     color: '#4fc3f7',
     tagline: 'Consistency over fitness — this phase is about staying injury-free and ready, not building.',
     focus:
-      'Volume comes down on purpose, through the holidays and the third trimester. Two KAZ sessions, one easy swim, one easy bike. Running is optional and short. Bank sleep, not mileage.',
+      'Volume comes down on purpose, through the holidays and the third trimester. Tue KAZ, Thu easy swim, Sunday easy ride. Running is optional and short. Bank sleep, not mileage.',
   },
   {
     id: 3,
@@ -64,7 +64,7 @@ export const PHASES = [
     color: '#ff9f45',
     tagline: 'Eight weeks. Rebuild, then sharpen.',
     focus:
-      'Swim and bike twice a week, run volume rebuilt continuously, a brick every 10 days, and KAZ twice a week — maintenance that never gets dropped. Final two weeks taper.',
+      'Tue is KAZ plus a steady run, Thu is race-pace swimming, Sunday alternates a long ride with a bike→run brick. KAZ stays in every week. Final two weeks taper.',
   },
 ]
 
